@@ -2,6 +2,7 @@ package kryo
 
 import (
 	"errors"
+	"fmt"
 	"unicode/utf8"
 )
 
@@ -26,6 +27,10 @@ func (p *Kryo) read() byte {
 		p.position++
 	}
 	return b
+}
+
+func (p *Kryo) Debug() {
+	fmt.Println("Debug:", p.buffer[p.position:p.limit])
 }
 
 func (p *Kryo) ReadByte() byte {
@@ -114,18 +119,13 @@ func (p *Kryo) readUtf8Length(b byte) int {
 
 func (p *Kryo) readUtf8(count int) string {
 	str := make([]byte, 0)
-	for i := 0; i < count; i++ {
-		b := p.read()
-		str = append(str, b)
-	}
 	for utf8.RuneCount(str) < count {
 		_, size := utf8.DecodeRune(p.buffer[p.position:])
-		for i := 0; i < size; i++ {
+		for n := 1; n <= size; n++ {
 			b := p.read()
 			str = append(str, b)
 		}
 	}
-
 	return string(str)
 }
 
